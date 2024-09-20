@@ -50,6 +50,9 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('nomor')
+                ->label('No')
+                ->getStateUsing(fn ($rowLoop) => $rowLoop->index + 1),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
