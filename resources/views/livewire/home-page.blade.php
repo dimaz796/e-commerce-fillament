@@ -186,24 +186,20 @@
 
     {{-- Categoties Selection --}}
 
-    <div class="bg-white-200 py-20">
+    <div class="w-full h-auto bg-gradient-to-r from-blue-200 to-cyan-200 dark:from-slate-800 dark:to-slate-900 py-20">
         <div class="max-w-xl mx-auto">
-            <div class="text-center ">
+            <div class="text-center">
                 <div class="relative flex flex-col items-center">
-                    <h1 class="text-5xl font-bold dark:text-gray-200"> Browse <span class="text-blue-500"> Categories
-                        </span> </h1>
+                    <h1 class="text-5xl font-bold dark:text-gray-200">Browse <span
+                            class="text-blue-500">Categories</span></h1>
                     <div class="flex w-40 mt-2 mb-6 overflow-hidden rounded">
-                        <div class="flex-1 h-2 bg-blue-200">
-                        </div>
-                        <div class="flex-1 h-2 bg-blue-400">
-                        </div>
-                        <div class="flex-1 h-2 bg-blue-600">
-                        </div>
+                        <div class="flex-1 h-2 bg-blue-200"></div>
+                        <div class="flex-1 h-2 bg-blue-400"></div>
+                        <div class="flex-1 h-2 bg-blue-600"></div>
                     </div>
                 </div>
-                <p class="mb-12 text-base text-center text-gray-500">
-                    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Delectus magni eius eaque?
-                    Pariatur
+                <p class="mb-12 text-base text-center text-gray-500 dark:text-gray-400">
+                    Lorem ipsum, dolor sit amet consectetur adipisicing elit. Delectus magni eius eaque? Pariatur
                     numquam, odio quod nobis ipsum ex cupiditate?
                 </p>
             </div>
@@ -223,8 +219,7 @@
                                 <div class="ms-3">
                                     <h3
                                         class="group-hover:text-blue-600 font-semibold text-gray-800 dark:group-hover:text-gray-400 dark:text-gray-200">
-                                        Laptops
-                                    </h3>
+                                        Laptops</h3>
                                 </div>
                             </div>
                             <div class="ps-3">
@@ -249,8 +244,7 @@
                                 <div class="ms-3">
                                     <h3
                                         class="group-hover:text-blue-600 font-semibold text-gray-800 dark:group-hover:text-gray-400 dark:text-gray-200">
-                                        Smartphones
-                                    </h3>
+                                        Smartphones</h3>
                                 </div>
                             </div>
                             <div class="ps-3">
@@ -275,8 +269,7 @@
                                 <div class="ms-3">
                                     <h3
                                         class="group-hover:text-blue-600 font-semibold text-gray-800 dark:group-hover:text-gray-400 dark:text-gray-200">
-                                        Smartwatches
-                                    </h3>
+                                        Smartwatches</h3>
                                 </div>
                             </div>
                             <div class="ps-3">
@@ -301,8 +294,7 @@
                                 <div class="ms-3">
                                     <h3
                                         class="group-hover:text-blue-600 font-semibold text-gray-800 dark:group-hover:text-gray-400 dark:text-gray-200">
-                                        Television
-                                    </h3>
+                                        Television</h3>
                                 </div>
                             </div>
                             <div class="ps-3">
@@ -318,8 +310,8 @@
 
             </div>
         </div>
-
     </div>
+
 
 
 

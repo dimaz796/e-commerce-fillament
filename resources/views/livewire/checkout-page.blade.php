@@ -127,44 +127,28 @@
         </div>
         <div class="md:col-span-12 lg:col-span-4 col-span-12">
             <div class="bg-white rounded-xl shadow p-4 sm:p-7 dark:bg-slate-900">
-                <div class="text-xl font-bold underline text-gray-700 dark:text-white mb-2">
+                <div class="text-xl font-bold underline text-gray-700 dark:text-gray-200 mb-2">
                     ORDER SUMMARY
                 </div>
-                <div class="flex justify-between mb-2 font-bold">
-                    <span>
-                        Subtotal
-                    </span>
-                    <span>
-                        45,000.00
-                    </span>
+                <div class="flex justify-between mb-2 font-bold text-gray-800 dark:text-gray-200">
+                    <span>Subtotal</span>
+                    <span>45,000.00</span>
                 </div>
-                <div class="flex justify-between mb-2 font-bold">
-                    <span>
-                        Taxes
-                    </span>
-                    <span>
-                        0.00
-                    </span>
+                <div class="flex justify-between mb-2 font-bold text-gray-800 dark:text-gray-200">
+                    <span>Taxes</span>
+                    <span>0.00</span>
                 </div>
-                <div class="flex justify-between mb-2 font-bold">
-                    <span>
-                        Shipping Cost
-                    </span>
-                    <span>
-                        0.00
-                    </span>
+                <div class="flex justify-between mb-2 font-bold text-gray-800 dark:text-gray-200">
+                    <span>Shipping Cost</span>
+                    <span>0.00</span>
                 </div>
-                <hr class="bg-slate-400 my-4 h-1 rounded">
-                <div class="flex justify-between mb-2 font-bold">
-                    <span>
-                        Grand Total
-                    </span>
-                    <span>
-                        45,000.00
-                    </span>
+                <hr class="bg-slate-400 dark:bg-gray-700 my-4 h-1 rounded">
+                <div class="flex justify-between mb-2 font-bold text-gray-800 dark:text-gray-200">
+                    <span>Grand Total</span>
+                    <span>45,000.00</span>
                 </div>
-                </hr>
             </div>
+
             <button class="bg-green-500 mt-4 w-full p-3 rounded-lg text-lg text-white hover:bg-green-600">
                 Place Order
             </button>
