@@ -82,13 +82,13 @@
                     </div>
                     <hr class="my-2 border-gray-300 dark:border-gray-700">
                     <div class="flex justify-between mb-2">
-                        <span class="font-semibold text-gray-800 dark:text-gray-200">Total</span>
+                        <span class="font-semibold text-gray-800 dark:text-gray-200">Grand Total</span>
                         <span class="font-semibold text-gray-800 dark:text-gray-200">Rp.
                             {{ number_format($grand_total, 0, ',', '.') }}</span>
                     </div>
                     @if ($cart_items)
-                        <button
-                            class="bg-blue-500 dark:bg-blue-600 text-white py-2 px-4 rounded-lg mt-4 w-full">Checkout</button>
+                        <a href="/checkout"
+                            class="bg-blue-500 dark:bg-blue-600 block text-center text-white py-2 px-4 rounded-lg mt-4 w-full">Checkout</a>
                     @endif
                 </div>
             </div>
