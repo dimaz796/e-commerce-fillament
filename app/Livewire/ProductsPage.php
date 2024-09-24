@@ -2,9 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Helpers\CartManagement;
+use App\Livewire\Partials\Navbar;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Product;
+use Jantinnerezo\LivewireAlert\LivewireAlert;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -13,6 +16,8 @@ use Livewire\WithPagination;
 #[Title("Product - Fillamers")]
 class ProductsPage extends Component
 {
+    use LivewireAlert;
+
     use WithPagination;
     
     #[Url]
@@ -29,6 +34,23 @@ class ProductsPage extends Component
 
     #[Url]
     public  $range_price = 0;
+
+    #[Url]
+    public $sort = 'latest';
+
+    //Add product to cart methods
+    public function addToCart($product_id){
+     $total_count = CartManagement::addItemToCart($product_id);
+
+     $this->dispatch('update-cart-count', total_count : $total_count)->to(Navbar::class);
+
+     $this->alert('success', 'Product added to the cart successfully!',[
+        'position' =>'bottom-end',
+        'timer'=> 3000,
+        'toast' => true
+     ]);
+    }
+
     public function render()
     {
         // Hilangkan get(), cukup gunakan paginate() langsung
@@ -53,6 +75,14 @@ class ProductsPage extends Component
         if($this->range_price > 0){
             $productQuery->where('price', '<=', $this->range_price);
         }
+
+        if ($this->sort == 'latest') {
+            $productQuery->latest();
+        }
+        if ($this->sort == 'price') {
+            $productQuery->orderBy('price');
+        }
+
         return view('livewire.products-page', [
             'products' => $productQuery->paginate(6),
             'brands' => Brand::where('is_active',1)->get(['id','name','slug']),
