@@ -64,7 +64,7 @@
 
                         <div class=" mt-2">
                             <span class="inline-block text-lg font-bold text-gray-800 dark:text-gray-200">
-                                Rp. {{ number_format($range_price, 0, ',', '.') }}
+                                {{ Number::currency($range_price, 'IDR') }}
                             </span>
                         </div>
 
@@ -121,8 +121,8 @@
                                                 </h3>
                                             </div>
                                             <p class="text-lg">
-                                                <span class="text-green-600 dark:text-green-600">Rp.
-                                                    {{ number_format($product->price, 0, ',', '.') }}
+                                                <span class="text-green-600 dark:text-green-600">
+                                                    {{ Number::currency($product->price, 'IDR') }}
                                                 </span>
                                             </p>
                                         </div>

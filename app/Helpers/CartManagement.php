@@ -115,12 +115,13 @@ Class CartManagement{
             if($item['product_id'] == $product_id){
                 $cart_items[$key]["quantity"]++;
                 $cart_items[$key]["total_amount"] = $cart_items[$key]["quantity"] * $cart_items[$key]["unit_amount"];
+            }
         }
 
         self::addCartItemsToCookie($cart_items);
         return $cart_items;
     }
-}
+
 
     //decrement items quantity
     static public function decrementQuantityToCartItem($product_id){

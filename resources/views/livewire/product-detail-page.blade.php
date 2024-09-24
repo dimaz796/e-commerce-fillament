@@ -42,7 +42,7 @@
                                 {{ $product->name }}
                             </h2>
                             <p class="inline-block mb-6 text-4xl font-bold text-gray-900 dark:text-gray-100">
-                                <span>Rp. {{ number_format($product->price, 0, ',', '.') }}</span>
+                                <span> {{ Number::currency($product->price, 'IDR') }}</span>
                             </p>
                             <p class="max-w-md text-gray-800 dark:text-gray-300">
                                 {{ $product->description }}
@@ -56,13 +56,13 @@
                                 Quantity
                             </label>
                             <div class="relative flex flex-row w-full h-10 mt-6 bg-transparent rounded-lg">
-                                <button wire:click="decreaseQyt"
+                                <button wire:click="decreaseQty"
                                     class="w-20 h-full text-gray-600 bg-gray-300 rounded-l outline-none cursor-pointer dark:text-gray-200 dark:bg-gray-900 dark:hover:bg-gray-600 hover:text-gray-700 hover:bg-gray-400">
                                     <span class="m-auto text-2xl font-thin">-</span>
                                 </button>
                                 <input type="number" readonly wire:model.defer="quantity"
                                     class="flex items-center w-full font-semibold text-center text-gray-700 placeholder-gray-700 bg-gray-300 outline-none dark:text-gray-200 dark:placeholder-gray-400 dark:bg-gray-900 focus:outline-none text-md hover:text-black">
-                                <button wire:click="increaseQyt"
+                                <button wire:click="increaseQty"
                                     class="w-20 h-full text-gray-600 bg-gray-300 rounded-r outline-none cursor-pointer dark:text-gray-200 dark:bg-gray-900 dark:hover:bg-gray-600 hover:text-gray-700 hover:bg-gray-400">
                                     <span class="m-auto text-2xl font-thin">+</span>
                                 </button>

@@ -26,8 +26,8 @@
                                                 {{ $item['name'] }}</span>
                                         </div>
                                     </td>
-                                    <td class="py-4 text-gray-800 dark:text-gray-200">Rp.
-                                        {{ number_format($item['unit_amount'], 0, ',', '.') }}</td>
+                                    <td class="py-4 text-gray-800 dark:text-gray-200">
+                                        {{ Number::currency($item['unit_amount'], 'IDR') }}</td>
                                     <td class="py-4">
                                         <div class="flex items-center">
                                             <button wire:click="decreaseQty({{ $item['product_id'] }})"
@@ -38,8 +38,8 @@
                                                 class="border dark:border-gray-700 rounded-md py-2 px-4 ml-2 bg-gray-200 dark:bg-slate-700 text-gray-800 dark:text-gray-200">+</button>
                                         </div>
                                     </td>
-                                    <td class="py-4 text-gray-800 dark:text-gray-200">Rp.
-                                        {{ number_format($item['total_amount']), 0, ',', '.' }}</td>
+                                    <td class="py-4 text-gray-800 dark:text-gray-200">
+                                        {{ Number::currency($item['total_amount'], 'IDR') }}</td>
                                     <td>
                                         <button wire:click="removeItem({{ $item['product_id'] }})"
                                             class="bg-slate-300 dark:bg-slate-700 border-2 border-slate-400 dark:border-gray-600 rounded-lg px-3 py-1 hover:bg-red-500 hover:text-white hover:border-red-700">
@@ -67,24 +67,24 @@
                     <h2 class="text-lg font-semibold mb-4 text-gray-800 dark:text-gray-200">Summary</h2>
                     <div class="flex justify-between mb-2">
                         <span class="text-gray-800 dark:text-gray-200">Subtotal</span>
-                        <span class="text-gray-800 dark:text-gray-200">Rp.
-                            {{ number_format($grand_total, 0, ',', '.') }}</span>
+                        <span class="text-gray-800 dark:text-gray-200">
+                            {{ Number::currency($grand_total, 'IDR') }}</span>
                     </div>
                     <div class="flex justify-between mb-2">
                         <span class="text-gray-800 dark:text-gray-200">Taxes</span>
-                        <span class="text-gray-800 dark:text-gray-200">>Rp.
-                            {{ number_format(0, 0, ',', '.') }}</span>
+                        <span class="text-gray-800 dark:text-gray-200">
+                            {{ Number::currency(0, 'IDR') }}</span>
                     </div>
                     <div class="flex justify-between mb-2">
                         <span class="text-gray-800 dark:text-gray-200">Shipping</span>
-                        <span class="text-gray-800 dark:text-gray-200">>Rp.
-                            {{ number_format(0, 0, ',', '.') }}</span>
+                        <span class="text-gray-800 dark:text-gray-200">
+                            {{ Number::currency(0, 'IDR') }}</span>
                     </div>
                     <hr class="my-2 border-gray-300 dark:border-gray-700">
                     <div class="flex justify-between mb-2">
                         <span class="font-semibold text-gray-800 dark:text-gray-200">Grand Total</span>
-                        <span class="font-semibold text-gray-800 dark:text-gray-200">Rp.
-                            {{ number_format($grand_total, 0, ',', '.') }}</span>
+                        <span class="font-semibold text-gray-800 dark:text-gray-200">
+                            {{ Number::currency($grand_total, 'IDR') }}</span>
                     </div>
                     @if ($cart_items)
                         <a href="/checkout"

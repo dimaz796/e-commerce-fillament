@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 
 
@@ -126,7 +127,8 @@ class ProductResource extends Resource
                     ->label('Price')
                     ->prefix('Rp.')
                     ->sortable()
-                    ->formatStateUsing(fn($state) => number_format($state, 2, ',', '.')),
+                    ->formatStateUsing(fn($state) => Number::currency($state, 'IDR')),
+
                 
                 Tables\Columns\IconColumn::make('is_active')
                     ->boolean(),

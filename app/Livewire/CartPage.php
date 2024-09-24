@@ -25,6 +25,7 @@ class CartPage extends Component
     }
 
     public function decreaseQty($product_id){
+
         $this->cart_items = CartManagement::decrementQuantityToCartItem($product_id);
         $this->grand_total = CartManagement::calculateGrandTotal($this->cart_items);
     }

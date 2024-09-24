@@ -214,7 +214,7 @@ class OrderResource extends Resource
                 TextColumn::make('grand_total')
                 ->label('Total')
                 ->sortable()
-                ->formatStateUsing(fn (string $state): string => 'Rp. ' . number_format($state, 2)),
+                ->formatStateUsing(fn (string $state): string => Number::currency($state, 'IDR')),
 
                 TextColumn::make('payment_method')
                 ->label('Metode Pembayaran')
