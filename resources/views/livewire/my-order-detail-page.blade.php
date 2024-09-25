@@ -25,7 +25,7 @@
                         </p>
                     </div>
                     <div class="mt-1 flex items-center gap-x-2">
-                        <div class="text-gray-800 dark:text-gray-200">Jace Grimes</div>
+                        <div class="text-gray-800 dark:text-gray-200">{{ auth()->user()->name }}</div>
                     </div>
                 </div>
             </div>

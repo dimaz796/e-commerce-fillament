@@ -150,10 +150,7 @@
 
                     </div>
 
-                    <!-- Pagination -->
-                    <div class="flex justify-end mt-6">
-                        {{ $products->links('pagination::tailwind') }}
-                    </div>
+                    {{ $products->links('pagination::tailwind') }}
                 </div>
 
             </div>
