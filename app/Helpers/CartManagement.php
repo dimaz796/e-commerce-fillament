@@ -53,7 +53,7 @@ Class CartManagement{
         }
 
         if ($exiting_item !== null){
-            $cart_items[$exiting_item]["quantity"] = $qty;
+            $cart_items[$exiting_item]["quantity"] += $qty;
             $cart_items[$exiting_item]["total_amount"] = $cart_items[$exiting_item]["quantity"] * $cart_items[$exiting_item]["unit_amount"];
         }else{
             $product = Product::where('id',$product_id)->first(['id','name','price','images']);

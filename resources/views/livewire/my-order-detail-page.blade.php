@@ -1,3 +1,34 @@
+@php
+    $status = '';
+    $payment_status = '';
+
+    if ($order->status == 'new') {
+        $status = ' <span
+        class="bg-blue-500 py-1 px-3 rounded text-white shadow">New</span>';
+    } elseif ($order->status == 'processing') {
+        $status = ' <span
+        class="bg-orange-500 py-1 px-3 rounded text-white shadow">Processing</span>';
+    } elseif ($order->status == 'shipped') {
+        $status = ' <span
+        class="bg-green-700 py-1 px-3 rounded text-white shadow">Shipped</span>';
+    } elseif ($order->status == 'delivered') {
+        $status = ' <span
+        class="bg-green-500 py-1 px-3 rounded text-white shadow">Delivered</span>';
+    } elseif ($order->status == 'cancelled') {
+        $status = ' <span
+        class="bg-red-500 py-1 px-3 rounded text-white shadow">Cancelled</span>';
+    }
+
+    if ($order->payment_status == 'pending') {
+        $payment_status = '<span class="bg-blue-500 py-1 px-3 rounded text-white shadow">Pending</span>';
+    } elseif ($order->payment_status == 'paid') {
+        $payment_status = '<span class="bg-green-500 py-1 px-3 rounded text-white shadow">Paid</span>';
+    } elseif ($order->payment_status == 'failed') {
+        $payment_status = '<span class="bg-red-500 py-1 px-3 rounded text-white shadow">Failed</span>';
+    }
+
+@endphp
+
 <div class="w-full max-w-[85rem] py-10 px-4 sm:px-6 lg:px-8 mx-auto">
     <h1 class="text-4xl font-bold text-slate-500 dark:text-gray-200">Order Details</h1>
 
@@ -56,7 +87,7 @@
                     </div>
                     <div class="mt-1 flex items-center gap-x-2">
                         <h3 class="text-xl font-medium text-gray-800 dark:text-gray-200">
-                            17-02-2024
+                            {{ $order->created_at->format('d-m-Y') }}
                         </h3>
                     </div>
                 </div>
@@ -85,7 +116,7 @@
                         </p>
                     </div>
                     <div class="mt-1 flex items-center gap-x-2">
-                        <span class="bg-yellow-500 py-1 px-3 rounded text-white shadow">Processing</span>
+                        {!! $status !!}
                     </div>
                 </div>
             </div>
@@ -115,7 +146,7 @@
                         </p>
                     </div>
                     <div class="mt-1 flex items-center gap-x-2">
-                        <span class="bg-green-500 py-1 px-3 rounded text-white shadow">Paid</span>
+                        {!! $payment_status !!}
                     </div>
                 </div>
             </div>
@@ -137,36 +168,27 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="py-4">
-                                <div class="flex items-center">
-                                    <img class="h-16 w-16 mr-4"
-                                        src="http://localhost:8000/storage/products/01HND3J5XS7ZC5J84BK5YDM6Z2.jpg"
-                                        alt="Product image">
-                                    <span class="font-semibold dark:text-gray-200">Samsung Galaxy Watch6</span>
-                                </div>
-                            </td>
-                            <td class="py-4 dark:text-gray-200">₹29,999.00</td>
-                            <td class="py-4">
-                                <span class="text-center w-8 dark:text-gray-200">1</span>
-                            </td>
-                            <td class="py-4 dark:text-gray-200">₹29,999.00</td>
-                        </tr>
-                        <tr>
-                            <td class="py-4">
-                                <div class="flex items-center">
-                                    <img class="h-16 w-16 mr-4"
-                                        src="http://localhost:8000/storage/products/01HND30J0P7C6MWQ1XQK7YDQKA.jpg"
-                                        alt="Product image">
-                                    <span class="font-semibold dark:text-gray-200">Samsung Galaxy Book3</span>
-                                </div>
-                            </td>
-                            <td class="py-4 dark:text-gray-200">₹75,000.00</td>
-                            <td class="py-4">
-                                <span class="text-center w-8 dark:text-gray-200">5</span>
-                            </td>
-                            <td class="py-4 dark:text-gray-200">₹375,000.00</td>
-                        </tr>
+
+                        @foreach ($order_items as $item)
+                            <tr wire:key="{{ $item->id }}">
+                                <td class="py-4">
+                                    <div class="flex items-center">
+                                        <img class="h-16 w-16 mr-4"
+                                            src="{{ url('storage', $item->product->images[0]) }}"
+                                            alt="{{ $item->product->name }}">
+                                        <span class="font-semibold dark:text-gray-200">{{ $item->product->name }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-4 dark:text-gray-200">{{ Number::currency($item->product->price, 'idr') }}
+                                </td>
+                                <td class="py-4">
+                                    <span class="text-center w-8 dark:text-gray-200">{{ $item->quantity }}</span>
+                                </td>
+                                <td class="py-4 dark:text-gray-200">
+                                    {{ Number::currency($item->total_amount, 'idr') }}</td>
+                            </tr>
+                        @endforeach
+
                     </tbody>
                 </table>
             </div>
@@ -175,11 +197,12 @@
                 <h1 class="font-3xl font-bold text-slate-500 dark:text-gray-200 mb-3">Shipping Address</h1>
                 <div class="flex justify-between items-center">
                     <div>
-                        <p class="dark:text-gray-200">42227 Zoila Glens, Oshkosh, Michigan, 55928</p>
+                        <p class="dark:text-gray-200">{{ $address->street_address }}, {{ $address->city }},
+                            {{ $address->state }}, {{ $address->zip_code }}</p>
                     </div>
                     <div>
                         <p class="font-semibold dark:text-gray-200">Phone:</p>
-                        <p class="dark:text-gray-200">023-509-0009</p>
+                        <p class="dark:text-gray-200">{{ $address->phone }}</p>
                     </div>
                 </div>
             </div>
@@ -190,20 +213,21 @@
                 <h2 class="text-lg font-semibold mb-4">Summary</h2>
                 <div class="flex justify-between mb-2">
                     <span class="dark:text-gray-200">Subtotal</span>
-                    <span class="dark:text-gray-200">₹404,999.00</span>
+                    <span class="dark:text-gray-200">{{ Number::currency($order->grand_total, 'idr') }}</span>
                 </div>
                 <div class="flex justify-between mb-2">
                     <span class="dark:text-gray-200">Taxes</span>
-                    <span class="dark:text-gray-200">₹0.00</span>
+                    <span class="dark:text-gray-200">₹{{ Number::currency(0, 'idr') }}</span>
                 </div>
                 <div class="flex justify-between mb-2">
                     <span class="dark:text-gray-200">Shipping</span>
-                    <span class="dark:text-gray-200">₹0.00</span>
+                    <span class="dark:text-gray-200">{{ Number::currency(0, 'idr') }}</span>
                 </div>
                 <hr class="my-2 dark:border-gray-700">
                 <div class="flex justify-between mb-2">
                     <span class="font-semibold dark:text-gray-200">Grand Total</span>
-                    <span class="font-semibold dark:text-gray-200">₹404,999.00</span>
+                    <span
+                        class="font-semibold dark:text-gray-200">{{ Number::currency($order->grand_total, 'idr') }}</span>
                 </div>
             </div>
         </div>
