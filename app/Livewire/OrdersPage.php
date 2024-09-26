@@ -15,7 +15,7 @@ class OrdersPage extends Component
     use WithPagination,WithoutUrlPagination;
     public function render()
     {
-        $my_order = Order::where("user_id",auth()->id())->latest()->paginate(2);
+        $my_order = Order::where("user_id",auth()->id())->latest()->paginate(10);
         return view('livewire.orders-page',['orders' => $my_order]);
     }
 }

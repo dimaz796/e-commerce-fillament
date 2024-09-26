@@ -103,6 +103,7 @@ Class CartManagement{
     $cart_items = json_decode(Cookie::get('cart_items'),true);
     if(!$cart_items){
         $cart_items= [];
+        
     }
     return $cart_items;
     }
@@ -140,7 +141,13 @@ Class CartManagement{
         return $cart_items;
     }
     //calculate grand total
-    static public function calculateGrandTotal($items){
-        return  array_sum(array_column($items,'total_amount'));
+    public static function calculateGrandTotal($cart_items)
+{
+    $total = 0;
+    foreach ($cart_items as $item) {
+        $total += $item['quantity'] * $item['unit_amount'];
     }
+    return $total;
+}
+
 }
