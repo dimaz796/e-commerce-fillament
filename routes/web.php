@@ -54,14 +54,13 @@ Route::middleware('auth')->group(function (){
     Route::get("/my-orders", OrdersPage::class);
     Route::get("/my-orders/{order_id}", MyOrderDetailPage::class)->name('my-orders.show');
     Route::get('/checkout', CheckoutPage::class)->name('checkout');
-    Route::get('/stripe/success', StripePaymentPage::class)->name('stripe.success');
-    Route::post('/webhook/stripe', [CheckoutPage::class, 'handleStripeWebhook'])->name('stripe.webhook');
-    Route::get('/stripe/success', [CheckoutPage::class, 'handleStripeSuccess'])->name('stripe.success');
-    // Route::get('/midtrans/payment', MidtransPaymentPage::class)->name('midtrans.payment');
-    Route::post('/midtrans/webhook', MidtransWebhookPage::class)->name('midtrans.webhook');
-    Route::get('/checkout/success/{order_id}', SuccessPage::class)->name('checkout.success');
-
-    // Route::get("/cancel", SuccessPage::class)->name("cancel");
+    Route::get('/success', SuccessPage::class)->name('success');
     Route::get("/cancel", CancelPage::class)->name("cancel");
-    Route::post('/midtrans/webhook', [CheckoutPage::class, 'handleMidtransWebhook']);
+
+    //Stripe
+    Route::get('/stripe/success', [CheckoutPage::class, 'handleStripeSuccess'])->name('stripe.success');
+    Route::get('/stripe/success', [CheckoutPage::class, 'handleStripeSuccess'])->name('stripe.success');
+
+    //Midtrans
+    Route::get('/midtrans/callback', [CheckoutPage::class, 'handleMidtransCallback'])->name('midtrans.callback');
 });

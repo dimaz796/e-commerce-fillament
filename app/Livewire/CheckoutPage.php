@@ -64,60 +64,114 @@ class CheckoutPage extends Component
         }
     }
 
-   private function processStripePayment($cart_items, $grand_total)
-{
-    Stripe::setApiKey(env("STRIPE_SECRET"));
-    
-    try {
-        $session = StripeSession::create([
-            "payment_method_types" => ["card"],
-            "customer_email" => auth()->user()->email,
-            "line_items" => $this->prepareStripeLineItems($cart_items),
-            "mode" => "payment",
-            "success_url" => route('stripe.success') . "?session_id={CHECKOUT_SESSION_ID}",
-            "cancel_url" => route('cancel'),
-            "metadata" => [
-            'first_name' => $this->first_name,
-                'last_name' => $this->last_name,
-                'phone' => $this->phone,
-                'street_address' => $this->street_address,
-                'city' => $this->city,
-                'state' => $this->state,
-                'zip_code' => $this->zip_code,
-                'user_id' => auth()->user()->id,
-            ],
-        ]);
+    // Start Proses Payment COD
+    private function processCodPayment()
+    {
+        $order_id = $this->saveOrder('cod', 'pending');
+        return redirect()->route('success');
+    }
 
-        return redirect($session->url);
-    } catch (\Exception $e) {
-        Log::error('Stripe session creation failed: ' . $e->getMessage());
-        return redirect()->back()->with('error', 'Unable to process Stripe payment. Please try again.');
+    // Proses Midtrans Payment
+    private function processMidtransPayment($cart_items, $grand_total)
+    {
+        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+        Config::$isSanitized = true;
+        Config::$is3ds = true;
+    
+        try {
+            // Simpan data customer ke session
+            session([
+                'midtrans_customer' => [
+                    'first_name' => $this->first_name,
+                    'last_name' => $this->last_name,
+                    'phone' => $this->phone,
+                    'street_address' => $this->street_address,
+                    'city' => $this->city,
+                    'state' => $this->state,
+                    'zip_code' => $this->zip_code,
+                ],
+                'midtrans_cart_items' => $cart_items,
+            ]);
+    
+            $params = [
+                'transaction_details' => [
+                    'order_id' => 'order-temp-' . time(),
+                    'gross_amount' => $grand_total,
+                    
+                ],
+                'customer_details' => [
+                    'first_name' => $this->first_name,
+                    'last_name' => $this->last_name,
+                    'email' => auth()->user()->email,
+                    'phone' => $this->phone,
+                ],
+                'item_details' => array_map(function ($item) {
+                    return [
+                        'id' => $item['product_id'],
+                        'price' => $item['unit_amount'],
+                        'quantity' => $item['quantity'],
+                        'name' => $item['name'],
+                    ];
+                }, $cart_items),
+                'callbacks' => [
+                    'finish' => url('/midtrans/callback'),
+                ]
+            ];
+    
+            $snapToken = Snap::getSnapToken($params);
+    
+            return redirect()->to("https://app.sandbox.midtrans.com/snap/v2/vtweb/" . $snapToken);
+        } catch (\Exception $e) {
+            Log::error('Midtrans payment initiation failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to process Midtrans payment. Please try again.');
+        }
+    }
+    
+    
+
+    public function handleMidtransCallback(Request $request)
+{
+    // Ambil data customer dan cart items dari session
+    $cart_items = session('midtrans_cart_items');
+    $customer_details = session('midtrans_customer');
+
+    if (!$cart_items || !$customer_details) {
+        return redirect()->route('checkout.failed')->with('error', 'Session expired.');
+    }
+
+    // Proses pembayaran Midtrans, cek status pembayaran dari Midtrans callback
+    $transaction_status = $request->input('transaction_status'); // Ambil status dari Midtrans
+
+    if ($transaction_status == 'capture' || $transaction_status == 'settlement') {
+        // Pembayaran sukses, buat order di database
+        $order_id = $this->saveOrderWithAddress(
+            'midtrans', 
+            'paid', 
+            $customer_details['first_name'], 
+            $customer_details['last_name'], 
+            $customer_details['phone'], 
+            $customer_details['street_address'], 
+            $customer_details['city'], 
+            $customer_details['state'], 
+            $customer_details['zip_code'], 
+            auth()->user()->id
+        );
+
+        // Hapus data session setelah order dibuat
+        session()->forget(['midtrans_customer', 'midtrans_cart_items']);
+
+        // Redirect ke halaman sukses
+        return redirect()->route('success');
+    } else {
+        // Jika pembayaran gagal
+        return redirect()->route('checkout.failed')->with('error', 'Payment failed.');
     }
 }
 
 
-    private function prepareStripeLineItems($cart_items)
-    {
-        return array_map(function ($item) {
-            return [
-                "price_data" => [
-                    'currency' => 'idr',
-                    'unit_amount' => $item['unit_amount'] * 100,
-                    "product_data" => [
-                        "name" => $item['name'],
-                    ],
-                ],
-                "quantity" => $item['quantity'],
-            ];
-        }, $cart_items);
-    }
 
-    private function processCodPayment()
-    {
-        $order_id = $this->saveOrder('cod', 'pending');
-        return redirect()->route('checkout.success', ['order_id' => $order_id]);
-    }
-
+    //Fungsi Untuk Menyimpan Datanya
     public function saveOrder($payment_method, $payment_status = 'pending')
     {
         $cart_items = CartManagement::getCartItemsFromCookie();
@@ -160,66 +214,111 @@ class CheckoutPage extends Component
         return $order->id;
     }
 
-   
-  public function saveOrderWithAddress(
-    $payment_method,
-    $payment_status,
-    $first_name,
-    $last_name,
-    $phone,
-    $street_address,
-    $city,
-    $state,
-    $zip_code,
-    $user_id
-) {
-    // Ambil item dari keranjang
-    $cart_items = CartManagement::getCartItemsFromCookie();
-
-    // Simpan order ke database
-    $order = Order::create([
-        'user_id' => $user_id,
-        'grand_total' => CartManagement::calculateGrandTotal($cart_items),
-        'payment_method' => $payment_method,
-        'payment_status' => $payment_status,
-        'status' => "new",
-        'currency' => "idr",
-        'shipping_amount' => 0,
-        'shipping_method' => ($payment_method == 'cod') ? 'cod' : 'none',
-        'notes' => "Order placed by " . auth()->user()->name,
-    ]);
-
-    // Simpan alamat pengiriman
-    Address::create([
-        'first_name' => $first_name,
-        'last_name' => $last_name,
-        'phone' => $phone,
-        'street_address' => $street_address,
-        'city' => $city,
-        'state' => $state,
-        'zip_code' => $zip_code,
-        'order_id' => $order->id,
-    ]);
-
-    // Simpan item pesanan
-    foreach ($cart_items as $item) {
-        OrderItem::create([
-            'order_id' => $order->id,
-            'product_id' => $item['product_id'],
-            'quantity' => $item['quantity'],
-            'unit_amount' => $item['unit_amount'],
-            'total_amount' => $item['unit_amount'] * $item['quantity'],
-        ]);
+    //Start Proses Stripe
+    private function processStripePayment($cart_items, $grand_total)
+    {
+        Stripe::setApiKey(env("STRIPE_SECRET"));
+        
+        try {
+            $session = StripeSession::create([
+                "payment_method_types" => ["card"],
+                "customer_email" => auth()->user()->email,
+                "line_items" => $this->prepareStripeLineItems($cart_items),
+                "mode" => "payment",
+                "success_url" => route('stripe.success') . "?session_id={CHECKOUT_SESSION_ID}",
+                "cancel_url" => route('cancel'),
+                "metadata" => [
+                'first_name' => $this->first_name,
+                    'last_name' => $this->last_name,
+                    'phone' => $this->phone,
+                    'street_address' => $this->street_address,
+                    'city' => $this->city,
+                    'state' => $this->state,
+                    'zip_code' => $this->zip_code,
+                    'user_id' => auth()->user()->id,
+                ],
+            ]);
+    
+            return redirect($session->url);
+        } catch (\Exception $e) {
+            Log::error('Stripe session creation failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Unable to process Stripe payment. Please try again.');
+        }
     }
 
-    // Hapus keranjang setelah order disimpan
-    CartManagement::clearCartItems();
+    private function prepareStripeLineItems($cart_items)
+    {
+        return array_map(function ($item) {
+            return [
+                "price_data" => [
+                    'currency' => 'idr',
+                    'unit_amount' => $item['unit_amount'] * 100,
+                    "product_data" => [
+                        "name" => $item['name'],
+                    ],
+                ],
+                "quantity" => $item['quantity'],
+            ];
+        }, $cart_items);
+    }
+   
+    public function saveOrderWithAddress(
+        $payment_method,
+        $payment_status,
+        $first_name,
+        $last_name,
+        $phone,
+        $street_address,
+        $city,
+        $state,
+        $zip_code,
+        $user_id
+    ) {
+        // Ambil item dari keranjang
+        $cart_items = CartManagement::getCartItemsFromCookie();
 
-    // Kembalikan ID order
-    return $order->id;
-}
+        // Simpan order ke database
+        $order = Order::create([
+            'user_id' => $user_id,
+            'grand_total' => CartManagement::calculateGrandTotal($cart_items),
+            'payment_method' => $payment_method,
+            'payment_status' => $payment_status,
+            'status' => "new",
+            'currency' => "idr",
+            'shipping_amount' => 0,
+            'shipping_method' => ($payment_method == 'cod') ? 'cod' : 'none',
+            'notes' => "Order placed by " . auth()->user()->name,
+        ]);
 
-    
+        // Simpan alamat pengiriman
+        Address::create([
+            'first_name' => $first_name,
+            'last_name' => $last_name,
+            'phone' => $phone,
+            'street_address' => $street_address,
+            'city' => $city,
+            'state' => $state,
+            'zip_code' => $zip_code,
+            'order_id' => $order->id,
+        ]);
+
+        // Simpan item pesanan
+        foreach ($cart_items as $item) {
+            OrderItem::create([
+                'order_id' => $order->id,
+                'product_id' => $item['product_id'],
+                'quantity' => $item['quantity'],
+                'unit_amount' => $item['unit_amount'],
+                'total_amount' => $item['unit_amount'] * $item['quantity'],
+            ]);
+        }
+
+        // Hapus keranjang setelah order disimpan
+        CartManagement::clearCartItems();
+
+        // Kembalikan ID order
+        return $order->id;
+    }
 
     public function handleStripeSuccess(Request $request)
     {
@@ -264,7 +363,7 @@ class CheckoutPage extends Component
                 }
     
                 // Redirect ke halaman sukses dengan order_id
-                return redirect()->route('checkout.success', ['order_id' => $order_id]);
+                return redirect()->route('success');
             } else {
                 Log::warning("Payment status is not 'paid'. Current status: " . $session->payment_status);
                 return redirect()->route('checkout.pending')->with('message', 'Pembayaran sedang diproses. Status: ' . $session->payment_status);
@@ -275,6 +374,7 @@ class CheckoutPage extends Component
             return redirect()->route('checkout.failed')->with('error', 'Gagal memverifikasi pembayaran: ' . $e->getMessage());
         }
     }
+    
     
 
      public function render()
