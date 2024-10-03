@@ -57,6 +57,7 @@ class OrderResource extends Resource
                             ->options([
                                 'stripe' => 'Stripe',
                                 'cod' => 'Cash On Delivery',
+                                'midtrans' => 'Midtrans',
                             ])
                             ->required()
                             ->columnSpan(6), // Mengatur kolom menjadi setengah halaman

@@ -1,4 +1,5 @@
 @php
+    use App\Models\Rating;
     $status = '';
     $payment_status = '';
 
@@ -7,6 +8,7 @@
         class="bg-blue-500 py-1 px-3 rounded text-white shadow">New</span>';
     } elseif ($order->status == 'processing') {
         $status = ' <span
+
         class="bg-orange-500 py-1 px-3 rounded text-white shadow">Processing</span>';
     } elseif ($order->status == 'shipped') {
         $status = ' <span
@@ -165,10 +167,10 @@
                             <th class="text-left font-semibold">Price</th>
                             <th class="text-left font-semibold">Quantity</th>
                             <th class="text-left font-semibold">Total</th>
+                            <th class="text-left font-semibold">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-
                         @foreach ($order_items as $item)
                             <tr wire:key="{{ $item->id }}">
                                 <td class="py-4">
@@ -184,14 +186,28 @@
                                 <td class="py-4">
                                     <span class="text-center w-8 dark:text-gray-200">{{ $item->quantity }}</span>
                                 </td>
-                                <td class="py-4 dark:text-gray-200">
-                                    {{ Number::currency($item->total_amount, 'idr') }}</td>
+                                <td class="py-4 dark:text-gray-200">{{ Number::currency($item->total_amount, 'idr') }}
+                                </td>
+
+                                <!-- Tombol rate akan muncul hanya jika user belum merating produk ini -->
+                                @if ($order->status == 'delivered' && $order->payment_status == 'paid')
+                                    <td class="py-4">
+                                        @if (!Rating::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists())
+                                            <a href="{{ route('rate.product', ['productId' => $item->product_id, 'orderId' => $order->id]) }}"
+                                                class="bg-blue-500 text-white py-1 px-3 rounded">
+                                                Rate this product
+                                            </a>
+                                        @else
+                                            <span class="text-gray-500">Already Rated</span>
+                                        @endif
+                                    </td>
+                                @endif
                             </tr>
                         @endforeach
-
                     </tbody>
                 </table>
             </div>
+
 
             <div class="bg-white overflow-x-auto rounded-lg shadow-md p-6 mb-4 dark:bg-slate-900 dark:text-gray-200">
                 <h1 class="font-3xl font-bold text-slate-500 dark:text-gray-200 mb-3">Shipping Address</h1>

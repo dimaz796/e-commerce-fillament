@@ -14,6 +14,7 @@ use App\Livewire\MidtransWebhookPage;
 use App\Livewire\MyOrderDetailPage;
 use App\Livewire\OrdersPage;
 use App\Livewire\ProductDetailPage;
+use App\Livewire\ProductRating;
 use App\Livewire\ProductsPage;
 use App\Livewire\StripePaymentPage;
 use App\Livewire\SuccessPage;
@@ -63,4 +64,8 @@ Route::middleware('auth')->group(function (){
 
     //Midtrans
     Route::get('/midtrans/callback', [CheckoutPage::class, 'handleMidtransCallback'])->name('midtrans.callback');
+
+    //Rating
+    // Route::get('/rate-product/{id}', [ProductRating::class, 'showRatingForm'])->name('rate.product');
+    Route::get('/rate-product/{productId}/{orderId}', ProductRating::class)->name('rate.product');
 });

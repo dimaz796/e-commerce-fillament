@@ -104,79 +104,105 @@
                     </div>
 
                     <!-- Grid Container -->
-                    <div class="flex flex-wrap items-center ">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 py-10">
 
                         @foreach ($products as $product)
-                            <!-- Each product card -->
-                            <div class="w-full px-3 mb-6 sm:w-1/2 md:w-1/3" wire:key="{{ $product->id }}">
-                                <div
-                                    class="flex flex-col bg-white shadow-sm border border-slate-200 rounded-lg h-full dark:bg-slate-900 dark:border-gray-700 min-h-[500px]">
-                                    <!-- Product Image: Gambar dengan ukuran seragam dan sudut rounded pada bagian atas -->
-                                    <div class="relative h-64 w-full overflow-hidden rounded-t-lg">
-                                        <a href="/products/{{ $product->slug }}" class="block h-full w-full">
-                                            <img class="w-full h-full object-cover"
-                                                src="{{ url('storage', $product->images[0]) }}"
-                                                alt="{{ $product->name }}" />
-                                        </a>
+                            <!-- Product Card -->
+                            <div
+                                class="bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden dark:bg-gray-900 dark:border-gray-700">
+                                <!-- Product Image -->
+                                <div class="relative overflow-hidden h-60">
+                                    <a href="/products/{{ $product->slug }}">
+                                        <img src="{{ url('storage', $product->images[0]) }}"
+                                            alt="{{ $product->name }}"
+                                            class="object-cover w-full h-full transition-transform duration-500 ease-in-out hover:scale-110">
+                                    </a>
+                                    <!-- Sale, Hot, or New Tags -->
+                                    @if ($product->is_new)
+                                        <span
+                                            class="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">New</span>
+                                    @elseif ($product->is_hot)
+                                        <span
+                                            class="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">Hot</span>
+                                    @elseif ($product->discount_percentage)
+                                        <span
+                                            class="absolute top-2 left-2 bg-blue-500 text-white text-xs font-bold px-2 py-1 rounded">
+                                            -{{ $product->discount_percentage }}%
+                                        </span>
+                                    @endif
+                                </div>
+                                <!-- Product Details -->
+                                <div class="p-4">
+                                    <!-- Product Title -->
+                                    <h4
+                                        class="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 line-clamp-2">
+                                        {{ Str::words($product->name, 5, '...') }}
+                                    </h4>
+                                    <!-- Price and Old Price (if discounted) -->
+                                    <div class="flex items-center space-x-2 mb-4">
+                                        <span
+                                            class="text-xl font-bold text-green-600 dark:text-blue-300">{{ Number::currency($product->price, 'IDR') }}</span>
+                                        @if ($product->old_price)
+                                            <span
+                                                class="text-sm line-through text-gray-500 dark:text-gray-400">{{ Number::currency($product->old_price, 'IDR') }}</span>
+                                        @endif
+                                    </div>
+                                    <!-- Rating and Sold Count -->
+                                    <div class="flex justify-between items-center mb-4">
+                                        <div class="flex items-center space-x-1">
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                @if ($i <= floor($product->average_rating))
+                                                    <!-- Full star -->
+                                                    <svg class="w-5 h-5 text-yellow-400" fill="currentColor"
+                                                        viewBox="0 0 20 20">
+                                                        <path
+                                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    </svg>
+                                                @elseif ($i == ceil($product->average_rating) && $product->average_rating - floor($product->average_rating) >= 0.5)
+                                                    <!-- Half star -->
+                                                    <svg class="w-5 h-5 text-yellow-400" fill="currentColor"
+                                                        viewBox="0 0 20 20">
+                                                        <path
+                                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                        <path fill-rule="evenodd"
+                                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                                                            clip-rule="evenodd" />
+                                                    </svg>
+                                                @else
+                                                    <!-- Empty star -->
+                                                    <svg class="w-5 h-5 text-gray-300" fill="currentColor"
+                                                        viewBox="0 0 20 20">
+                                                        <path
+                                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                                    </svg>
+                                                @endif
+                                            @endfor
+                                            <span
+                                                class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ number_format($product->average_rating, 1) }}/5</span>
+                                        </div>
+                                        <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Terjual:
+                                            {{ $product->sold_count }} pcs</span>
                                     </div>
 
-                                    <!-- Product Details: Menggunakan flex-grow agar tetap diisi secara proporsional -->
-                                    <div class="flex flex-col justify-between flex-grow p-6 text-left">
-                                        <!-- Judul Produk dengan pembatasan panjang dan tinggi yang konsisten -->
-                                        <div class=""> <!-- Mengurangi jarak margin-bottom -->
-                                            <h4
-                                                class="text-xl font-semibold text-slate-800 dark:text-slate-200 capitalize line-clamp-2 h-12 mb-1">
-                                                <!-- Mengurangi margin-bottom -->
-                                                {{ Str::words($product->name, 5, '...') }}
-                                            </h4>
 
-                                            <p class="text-lg text-green-600 font-semibold dark:text-blue-300 mb-2">
-                                                <!-- Mengurangi margin-bottom -->
-                                                {{ Number::currency($product->price, 'IDR') }}
-                                            </p>
-                                        </div>
-
-                                        <!-- Rating dan bintang di kanan -->
-                                        <div class="flex items-center justify-between mb-2">
-                                            <!-- Mengurangi margin-bottom -->
-                                            <div class="text-left">
-                                                <p
-                                                    class="text-sm font-medium text-slate-500 uppercase dark:text-slate-400">
-                                                    Rating: 4.5/5
-                                                </p>
-                                            </div>
-                                            <div class="text-yellow-400">
-                                                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor"
-                                                    class="w-5 h-5 bi bi-star" viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M3.612 15.443c-.396.198-.847-.149-.746-.592l.83-4.73L.173 6.765c-.329-.32-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.063.612.63.283.95l-3.523 3.356.83 4.73c.101.443-.35.79-.746.592L8 13.187l-4.389 2.256" />
-                                                </svg>
-                                            </div>
-                                        </div>
-
-                                        <!-- Add to Cart Button -->
-                                        <div class="flex justify-center pt-2"> <!-- Mengurangi padding-top -->
-                                            <button wire:click.prevent='addToCart({{ $product->id }})'
-                                                class="min-w-32 rounded-md bg-slate-800 py-2 px-6 border border-transparent text-center text-sm text-white transition-all shadow-md hover:shadow-lg focus:bg-slate-700 focus:shadow-none active:bg-slate-700 hover:bg-slate-700 active:shadow-none disabled:pointer-events-none disabled:opacity-50 disabled:shadow-none dark:bg-slate-700 dark:hover:bg-slate-600">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                    fill="currentColor" class="w-4 h-4 bi bi-cart3 inline mr-2"
-                                                    viewBox="0 0 16 16">
-                                                    <path
-                                                        d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5.5 0 0 1 0 1H4a.5.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                                                </svg>
-                                                <span wire:loading.remove
-                                                    wire:target='addToCart({{ $product->id }})'>Add to Cart</span>
-                                                <span wire:loading
-                                                    wire:target='addToCart({{ $product->id }})'>Adding...</span>
-                                            </button>
-                                        </div>
+                                    <!-- Add to Cart Button -->
+                                    <div class="flex justify-center">
+                                        <button wire:click.prevent='addToCart({{ $product->id }})'
+                                            class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-medium shadow transition">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                                fill="currentColor" class="w-4 h-4 inline mr-1 bi bi-cart3"
+                                                viewBox="0 0 16 16">
+                                                <path
+                                                    d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5.5 0 0 1 0 1H4a.5.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                                            </svg>
+                                            Add to Cart
+                                        </button>
                                     </div>
-
                                 </div>
                             </div>
                         @endforeach
-
                     </div>
+
 
                     {{ $products->links('pagination::tailwind') }}
                 </div>

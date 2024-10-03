@@ -18,6 +18,7 @@
     @livewire('partials.footer')
     @livewireScripts
     <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="../path/to/flowbite/dist/flowbite.min.js"></script>
     <x-livewire-alert::scripts />
 </body>
 
