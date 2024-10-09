@@ -17,6 +17,7 @@ class Product extends Model
         'images',
         'description',
         'price',
+        'stock',
         'is_active',
         'is_featured',
         'in_stock',
@@ -41,5 +42,13 @@ class Product extends Model
 
     public function ratings(){
         return $this->hasMany(Rating::class);
+    }
+
+    public function product_variants(){
+        return $this->hasMany(ProductVariant::class);
+    }
+
+    public function carts(){
+        return $this->hasMany(Cart::class);
     }
 }

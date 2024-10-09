@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Helpers\CartManagement;
 use App\Models\Order;
 use App\Models\Address;
+use App\Models\Cart;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -30,7 +31,7 @@ class CheckoutPage extends Component
 
     public function mount()
     {
-        $cart_items = CartManagement::getCartItemsFromCookie();
+        $cart_items = Cart::where('user_id', auth()->id())->get();
         if (empty($cart_items)) {
             return redirect('/products');
         }
@@ -49,7 +50,7 @@ class CheckoutPage extends Component
             'payment_method' => 'required|in:stripe,midtrans,cod',
         ]);
 
-        $cart_items = CartManagement::getCartItemsFromCookie();
+        $cart_items = Cart::where('user_id', auth()->id())->get();
         $grand_total = CartManagement::calculateGrandTotal($cart_items);
 
         switch ($this->payment_method) {
@@ -73,60 +74,61 @@ class CheckoutPage extends Component
 
     // Proses Midtrans Payment
     private function processMidtransPayment($cart_items, $grand_total)
-    {
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY');
-        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
-    
-        try {
-            // Simpan data customer ke session
-            session([
-                'midtrans_customer' => [
-                    'first_name' => $this->first_name,
-                    'last_name' => $this->last_name,
-                    'phone' => $this->phone,
-                    'street_address' => $this->street_address,
-                    'city' => $this->city,
-                    'state' => $this->state,
-                    'zip_code' => $this->zip_code,
-                ],
-                'midtrans_cart_items' => $cart_items,
-            ]);
-    
-            $params = [
-                'transaction_details' => [
-                    'order_id' => 'order-temp-' . time(),
-                    'gross_amount' => $grand_total,
-                    
-                ],
-                'customer_details' => [
-                    'first_name' => $this->first_name,
-                    'last_name' => $this->last_name,
-                    'email' => auth()->user()->email,
-                    'phone' => $this->phone,
-                ],
-                'item_details' => array_map(function ($item) {
-                    return [
-                        'id' => $item['product_id'],
-                        'price' => $item['unit_amount'],
-                        'quantity' => $item['quantity'],
-                        'name' => $item['name'],
-                    ];
-                }, $cart_items),
-                'callbacks' => [
-                    'finish' => url('/midtrans/callback'),
-                ]
-            ];
-    
-            $snapToken = Snap::getSnapToken($params);
-    
-            return redirect()->to("https://app.sandbox.midtrans.com/snap/v2/vtweb/" . $snapToken);
-        } catch (\Exception $e) {
-            Log::error('Midtrans payment initiation failed: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Unable to process Midtrans payment. Please try again.');
-        }
+{
+    Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+    Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
+    Config::$isSanitized = true;
+    Config::$is3ds = true;
+
+    try {
+        // Simpan data customer ke session
+        session([
+            'midtrans_customer' => [
+                'first_name' => $this->first_name,
+                'last_name' => $this->last_name,
+                'phone' => $this->phone,
+                'street_address' => $this->street_address,
+                'city' => $this->city,
+                'state' => $this->state,
+                'zip_code' => $this->zip_code,
+            ],
+            'midtrans_cart_items' => $cart_items->toArray(), // Konversi ke array
+        ]);
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => 'order-temp-' . time(),
+                'gross_amount' => $grand_total,
+            ],
+            'customer_details' => [
+                'first_name' => $this->first_name,
+                'last_name' => $this->last_name,
+                'email' => auth()->user()->email,
+                'phone' => $this->phone,
+            ],
+            'item_details' => $cart_items->map(function ($item) {
+                return [
+                    'id' => $item->product_id,
+                    'price' => $item->productVariant->price, // Ambil harga dari relasi productVariant
+                    'quantity' => $item->quantity,
+                    'name' => $item->product->name, // Ambil nama dari relasi product
+                ];
+            })->toArray(), // Konversi hasil map ke array
+            'callbacks' => [
+                'finish' => url('/midtrans/callback'),
+            ]
+        ];
+
+        
+        $snapToken = Snap::getSnapToken($params);
+
+        return redirect()->to("https://app.sandbox.midtrans.com/snap/v2/vtweb/" . $snapToken);
+    } catch (\Exception $e) {
+        Log::error('Midtrans payment initiation failed: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Unable to process Midtrans payment. Please try again.');
     }
+}
+
     
     
 
@@ -174,7 +176,7 @@ class CheckoutPage extends Component
     //Fungsi Untuk Menyimpan Datanya
     public function saveOrder($payment_method, $payment_status = 'pending')
     {
-        $cart_items = CartManagement::getCartItemsFromCookie();
+        $cart_items = Cart::where('user_id', auth()->id())->get();
 
         $order = Order::create([
             'user_id' => auth()->id(),
@@ -200,16 +202,27 @@ class CheckoutPage extends Component
         ]);
 
         foreach ($cart_items as $item) {
+            // Simpan item pesanan
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $item['product_id'],
                 'quantity' => $item['quantity'],
-                'unit_amount' => $item['unit_amount'],
-                'total_amount' => $item['unit_amount'] * $item['quantity'],
+                'unit_amount' => $item->productVariant->price,
+                'total_amount' => $item->productVariant->price * $item['quantity'],
             ]);
+    
+            // Kurangi stok product variant
+            $product_variant = $item->productVariant;
+            $product_variant->stock -= $item['quantity'];
+            $product_variant->save();
+    
+            // Update stok product berdasarkan total stok dari semua variant
+            $product = $product_variant->product;
+            $product->stock = $product->product_variants()->sum('stock');
+            $product->save();
         }
 
-        CartManagement::clearCartItems();
+        Cart::where('user_id', auth()->id())->delete();
 
         return $order->id;
     }
@@ -248,19 +261,20 @@ class CheckoutPage extends Component
 
     private function prepareStripeLineItems($cart_items)
     {
-        return array_map(function ($item) {
+        return $cart_items->map(function ($item) {
             return [
                 "price_data" => [
                     'currency' => 'idr',
-                    'unit_amount' => $item['unit_amount'] * 100,
+                    'unit_amount' => $item->productVariant->price * 100, // Mengambil harga dari relasi ProductVariant
                     "product_data" => [
-                        "name" => $item['name'],
+                        "name" => $item->product->name, // Mengambil nama produk dari relasi Product
                     ],
                 ],
-                "quantity" => $item['quantity'],
+                "quantity" => $item->quantity, // Mengambil kuantitas dari item di cart
             ];
-        }, $cart_items);
+        })->toArray(); // Mengonversi hasil map ke array
     }
+    
    
     public function saveOrderWithAddress(
         $payment_method,
@@ -275,7 +289,7 @@ class CheckoutPage extends Component
         $user_id
     ) {
         // Ambil item dari keranjang
-        $cart_items = CartManagement::getCartItemsFromCookie();
+        $cart_items = Cart::where('user_id', auth()->id())->get();
 
         // Simpan order ke database
         $order = Order::create([
@@ -304,17 +318,28 @@ class CheckoutPage extends Component
 
         // Simpan item pesanan
         foreach ($cart_items as $item) {
+            // Simpan item pesanan
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $item['product_id'],
                 'quantity' => $item['quantity'],
-                'unit_amount' => $item['unit_amount'],
-                'total_amount' => $item['unit_amount'] * $item['quantity'],
+                'unit_amount' => $item->productVariant->price,
+                'total_amount' => $item->productVariant->price * $item['quantity'],
             ]);
+    
+            // Kurangi stok product variant
+            $product_variant = $item->productVariant;
+            $product_variant->stock -= $item['quantity'];
+            $product_variant->save();
+    
+            // Update stok product berdasarkan total stok dari semua variant
+            $product = $product_variant->product;
+            $product->stock = $product->product_variants()->sum('stock');
+            $product->save();
         }
 
         // Hapus keranjang setelah order disimpan
-        CartManagement::clearCartItems();
+        Cart::where('user_id', auth()->id())->delete();
 
         // Kembalikan ID order
         return $order->id;
@@ -371,7 +396,7 @@ class CheckoutPage extends Component
         } catch (\Exception $e) {
             Log::error("Stripe session verification failed: " . $e->getMessage());
             Log::error("Exception trace: " . $e->getTraceAsString());
-            return redirect()->route('checkout.failed')->with('error', 'Gagal memverifikasi pembayaran: ' . $e->getMessage());
+            return redirect()->route('cancel')->with('error', 'Gagal memverifikasi pembayaran: ' . $e->getMessage());
         }
     }
     
@@ -379,7 +404,9 @@ class CheckoutPage extends Component
 
      public function render()
     {
-        $cart_items = CartManagement::getCartItemsFromCookie();
+        $cart_items = Cart::where('user_id', auth()->id())
+                        ->with('productVariant','product')
+                        ->get();
         $grand_total = CartManagement::calculateGrandTotal($cart_items);
         return view('livewire.checkout-page', [
             'cart_items' => $cart_items,

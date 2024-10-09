@@ -57,7 +57,7 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('nomor')
                 ->label('No')
-                ->getStateUsing(fn ($rowLoop) => $rowLoop->index + 1),
+                ->getStateUsing(fn ($rowLoop, $livewire) => ($rowLoop->index + 1) + ($livewire->getTable()->getRecords()->firstItem() - 1)),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')

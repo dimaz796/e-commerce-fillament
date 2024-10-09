@@ -39,18 +39,7 @@ class ProductsPage extends Component
     #[Url]
     public $sort = 'latest';
 
-    //Add product to cart methods
-    public function addToCart($product_id){
-     $total_count = CartManagement::addItemToCart($product_id);
 
-     $this->dispatch('update-cart-count', total_count : $total_count)->to(Navbar::class);
-
-     $this->alert('success', 'Product added to the cart successfully!',[
-        'position' =>'bottom-end',
-        'timer'=> 3000,
-        'toast' => true
-     ]);
-    }
 
     public function render()
     {
@@ -62,16 +51,19 @@ class ProductsPage extends Component
                 $query->select(DB::raw('ROUND(coalesce(avg(rating), 0), 1)')); // Menggunakan ROUND untuk 1 angka desimal
             },
             'orderItems as sold_count'
-        ]);
+        ])
+        ->join('product_variants', 'products.id', '=', 'product_variants.product_id') // Join dengan tabel product_variants
+        ->select('products.*', DB::raw('MIN(product_variants.price) as min_price'), DB::raw('MAX(product_variants.price) as max_price')) // Mengambil harga minimum dan maksimum
+        ->groupBy('products.id');
     
         // Filter berdasarkan kategori
         if(!empty($this->selected_categories)){
-            $productQuery->whereIn('category_id', $this->selected_categories); 
+            $productQuery->whereIn('category_id', $this->selected_categories);
         }
     
         // Filter berdasarkan merek
         if(!empty($this->selected_brands)){
-            $productQuery->whereIn('brand_id', $this->selected_brands); 
+            $productQuery->whereIn('brand_id', $this->selected_brands);
         }
     
         // Filter berdasarkan produk featured

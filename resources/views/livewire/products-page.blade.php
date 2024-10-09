@@ -140,8 +140,19 @@
                                     </h4>
                                     <!-- Price and Old Price (if discounted) -->
                                     <div class="flex items-center space-x-2 mb-4">
-                                        <span
-                                            class="text-xl font-bold text-green-600 dark:text-blue-300">{{ Number::currency($product->price, 'IDR') }}</span>
+                                        @php
+                                            $productVariants = $product->product_variants; // Ambil semua varian produk
+                                            $prices = $productVariants->pluck('price'); // Ambil hanya harga dari varian produk
+
+                                            $minPrice = $prices->min(); // Dapatkan harga terendah
+
+                                        @endphp
+
+
+                                        <span class="text-xl font-bold text-green-600 dark:text-blue-300">
+                                            {{ Number::currency($minPrice, 'IDR') }}
+                                        </span>
+
                                         @if ($product->old_price)
                                             <span
                                                 class="text-sm line-through text-gray-500 dark:text-gray-400">{{ Number::currency($product->old_price, 'IDR') }}</span>
@@ -187,17 +198,13 @@
 
                                     <!-- Add to Cart Button -->
                                     <div class="flex justify-center">
-                                        <button wire:click.prevent='addToCart({{ $product->id }})'
+                                        <!-- Tombol Lihat Produk -->
+                                        <a href="/products/{{ $product->slug }}"
                                             class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-md font-medium shadow transition">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                fill="currentColor" class="w-4 h-4 inline mr-1 bi bi-cart3"
-                                                viewBox="0 0 16 16">
-                                                <path
-                                                    d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5.5 0 0 1 0 1H4a.5.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
-                                            </svg>
-                                            Add to Cart
-                                        </button>
+                                            Lihat Produk
+                                        </a>
                                     </div>
+
                                 </div>
                             </div>
                         @endforeach

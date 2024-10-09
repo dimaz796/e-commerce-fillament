@@ -21,7 +21,8 @@ class CategoryResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-s-tag';
 
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $navigationGroup = 'Item';
+
 
     protected static ?int $navigationSort = 3;
 
@@ -66,7 +67,7 @@ class CategoryResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('nomor')
                 ->label('No')
-                ->getStateUsing(fn ($rowLoop) => $rowLoop->index + 1),
+                ->getStateUsing(fn ($rowLoop, $livewire) => ($rowLoop->index + 1) + ($livewire->getTable()->getRecords()->firstItem() - 1)),
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('image')

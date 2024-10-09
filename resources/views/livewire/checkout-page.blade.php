@@ -91,6 +91,7 @@
                                 <label class="block text-gray-700 dark:text-white mb-1" for="zip">
                                     ZIP Code
                                 </label>
+
                                 <input wire:model="zip_code"
                                     class="w-full rounded-lg border py-2 px-3 dark:bg-gray-700 dark:text-white dark:border-none"
                                     id="zip" type="text">
@@ -171,6 +172,17 @@
                 </div>
                 <!-- End Card -->
             </div>
+
+            @if (session('error'))
+                <script>
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: '{{ session('error') }}',
+                        confirmButtonText: 'OK'
+                    });
+                </script>
+            @endif
             <div class="md:col-span-12 lg:col-span-4 col-span-12">
                 <div class="bg-white rounded-xl shadow p-4 sm:p-7 dark:bg-slate-900">
                     <div class="text-xl font-bold underline text-gray-700 dark:text-gray-200 mb-2">
@@ -212,13 +224,13 @@
                             <li class="py-3 sm:py-4" wire:key="{{ $ci['product_id'] }}">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0">
-                                        <img alt="{{ $ci['name'] }}" class="w-12 h-12 rounded-full"
-                                            src="{{ url('storage', $ci['image']) }}">
+                                        <img alt="{{ $ci->product->name }}" class="w-12 h-12 rounded-full"
+                                            src="{{ url('storage', $ci->productVariant->image) }}">
                                         </img>
                                     </div>
                                     <div class="flex-1 min-w-0 ms-4">
                                         <p class="text-sm font-medium text-gray-900 truncate dark:text-white">
-                                            {{ $ci['name'] }}
+                                            {{ $ci->product->name }}
                                         </p>
                                         <p class="text-sm text-gray-500 truncate dark:text-gray-400">
                                             Quantity: {{ $ci['quantity'] }}
@@ -226,7 +238,7 @@
                                     </div>
                                     <div
                                         class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white">
-                                        {{ Number::currency($ci['total_amount'], 'IDR') }}
+                                        {{ Number::currency($ci['total_price'], 'IDR') }}
                                     </div>
                                 </div>
                             </li>

@@ -2,19 +2,25 @@
     <div class="container mx-auto px-4">
         <h1 class="text-2xl font-semibold mb-4 text-gray-800 dark:text-gray-200">Shopping Cart</h1>
         <div class="grid md:grid-cols-3 gap-8">
+
             <!-- Bagian Order Item yang Bisa di Scroll -->
             <div class="md:col-span-2 space-y-4 h-96 overflow-y-auto scrollbar-hide">
                 @forelse ($cart_items as $item)
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md flex justify-between items-center">
                         <div class="flex items-start gap-4">
+                            <!-- Gambar Produk -->
                             <div class="w-28 h-28 bg-gray-100 dark:bg-gray-800 p-2 rounded-md">
-                                <img class="w-full h-full object-contain" src="{{ url('storage', $item['image']) }}"
-                                    alt="{{ $item['name'] }}">
+                                <img class="w-full h-full object-cover"
+                                    src="{{ isset($item['productVariant']) ? url('storage', $item['productVariant']['image']) : 'default_image_path_here' }}"
+                                    alt="{{ $item['name'] }}" />
+
                             </div>
+                            <!-- Detail Produk -->
                             <div class="flex flex-col">
                                 <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">{{ $item['name'] }}</h3>
                                 <span class="text-sm text-gray-500 dark:text-gray-400">Size: MD</span>
-                                <button wire:click="removeItem({{ $item['product_id'] }})"
+                                <button
+                                    wire:click="removeItem({{ $item['product_id'] }}, {{ $item['product_variant_id'] }})"
                                     class="mt-4 font-semibold text-red-500 text-sm flex items-center gap-1">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor"
                                         viewBox="0 0 24 24">
@@ -23,17 +29,23 @@
                                     </svg>
                                     Remove
                                 </button>
+
                             </div>
                         </div>
+                        <!-- Harga dan Pengaturan Jumlah -->
                         <div class="ml-auto flex flex-col items-center">
-                            <span
-                                class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{ Number::currency($item['unit_amount'], 'IDR') }}</span>
+                            <span class="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                {{ Number::currency($item->productVariant->price, 'IDR') }}
+                            </span>
                             <div class="mt-2 flex items-center">
-                                <button wire:click="decreaseQty({{ $item['product_id'] }})"
+                                <button wire:click="decreaseQty({{ $item['id'] }})"
                                     class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-md">-</button>
                                 <span class="mx-3">{{ $item['quantity'] }}</span>
-                                <button wire:click="increaseQty({{ $item['product_id'] }})"
-                                    class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-md">+</button>
+                                <button wire:click="increaseQty({{ $item['id'] }})"
+                                    class="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-md"
+                                    @if ($item['quantity'] >= $item->productVariant->stock) disabled @endif>
+                                    +
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -41,8 +53,7 @@
                     <div class="text-center py-4">
                         <h3 class="text-2xl font-semibold text-gray-500 dark:text-gray-400 mb-4">Your cart is empty!
                         </h3>
-                        <a href="/products" class="bg-blue-500 dark:bg-gray-800  text-white px-4 py-2 rounded-md">Back
-                            to
+                        <a href="/products" class="bg-blue-500 dark:bg-gray-800 text-white px-4 py-2 rounded-md">Back to
                             Products</a>
                     </div>
                 @endforelse
@@ -52,7 +63,8 @@
             <div class="bg-gray-100 dark:bg-gray-800 rounded-md p-6">
                 <h3
                     class="text-lg font-bold text-gray-800 dark:text-gray-200 border-b border-gray-300 dark:border-gray-700 pb-2">
-                    Order Summary</h3>
+                    Order Summary
+                </h3>
                 <div class="flex justify-between mt-6 text-gray-800 dark:text-gray-200">
                     <span>Subtotal</span>
                     <span>{{ Number::currency($grand_total, 'IDR') }}</span>
@@ -72,7 +84,9 @@
                 </div>
                 @if ($cart_items)
                     <a href="/checkout"
-                        class="mt-6 block bg-blue-500 dark:bg-blue-600 text-center text-white py-2 rounded-md">Checkout</a>
+                        class="mt-6 block bg-blue-500 dark:bg-blue-600 text-center text-white py-2 rounded-md">
+                        Checkout
+                    </a>
                 @endif
             </div>
         </div>

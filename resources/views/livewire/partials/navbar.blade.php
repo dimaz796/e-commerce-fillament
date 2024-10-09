@@ -57,7 +57,10 @@
                             </svg>
                             <span class="mr-1">Cart</span>
                             <span
-                                class="py-0.5 px-1.5 rounded-full text-xs font-medium bg-blue-50 border border-blue-200 text-blue-600 dark:bg-slate-700 dark:border-slate-600 dark:text-white">{{ $total_count }}</span>
+                                class="py-0.5 px-1.5 rounded-full text-xs font-medium bg-blue-50 border border-blue-200 text-blue-600 dark:bg-slate-700 dark:border-slate-600 dark:text-white">
+                                {{ is_array($total_count) ? implode(', ', $total_count) : $total_count }}
+                            </span>
+
 
                         </a>
 
