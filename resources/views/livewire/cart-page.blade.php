@@ -4,7 +4,8 @@
         <div class="grid md:grid-cols-3 gap-8">
 
             <!-- Bagian Order Item yang Bisa di Scroll -->
-            <div class="md:col-span-2 space-y-4 h-96 overflow-y-auto scrollbar-hide">
+            <div class="md:col-span-2 space-y-4">
+
                 @forelse ($cart_items as $item)
                     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-md flex justify-between items-center">
                         <div class="flex items-start gap-4">
@@ -12,13 +13,15 @@
                             <div class="w-28 h-28 bg-gray-100 dark:bg-gray-800 p-2 rounded-md">
                                 <img class="w-full h-full object-cover"
                                     src="{{ isset($item['productVariant']) ? url('storage', $item['productVariant']['image']) : 'default_image_path_here' }}"
-                                    alt="{{ $item['name'] }}" />
+                                    alt="{{ $item['product']['name'] }}" />
 
                             </div>
                             <!-- Detail Produk -->
                             <div class="flex flex-col">
-                                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">{{ $item['name'] }}</h3>
-                                <span class="text-sm text-gray-500 dark:text-gray-400">Size: MD</span>
+                                <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">
+                                    {{ $item['product']['name'] }}</h3>
+                                <span class="text-sm text-gray-500 dark:text-gray-400">Type:
+                                    {{ $item['productVariant']['variant_value'] }}</span>
                                 <button
                                     wire:click="removeItem({{ $item['product_id'] }}, {{ $item['product_variant_id'] }})"
                                     class="mt-4 font-semibold text-red-500 text-sm flex items-center gap-1">
@@ -60,35 +63,36 @@
             </div>
 
             <!-- Bagian Summary -->
-            <div class="bg-gray-100 dark:bg-gray-800 rounded-md p-6">
+            <div class="bg-gray-100 dark:bg-gray-900 rounded-md p-6 shadow-md">
                 <h3
-                    class="text-lg font-bold text-gray-800 dark:text-gray-200 border-b border-gray-300 dark:border-gray-700 pb-2">
+                    class="text-lg font-bold text-gray-900 dark:text-white border-b border-gray-300 dark:border-gray-600 pb-2">
                     Order Summary
                 </h3>
-                <div class="flex justify-between mt-6 text-gray-800 dark:text-gray-200">
+                <div class="flex justify-between mt-6 text-gray-700 dark:text-gray-300">
                     <span>Subtotal</span>
                     <span>{{ Number::currency($grand_total, 'IDR') }}</span>
                 </div>
-                <div class="flex justify-between mt-2 text-gray-800 dark:text-gray-200">
+                <div class="flex justify-between mt-2 text-gray-700 dark:text-gray-300">
                     <span>Taxes</span>
                     <span>{{ Number::currency(0, 'IDR') }}</span>
                 </div>
-                <div class="flex justify-between mt-2 text-gray-800 dark:text-gray-200">
+                <div class="flex justify-between mt-2 text-gray-700 dark:text-gray-300">
                     <span>Shipping</span>
                     <span>{{ Number::currency(0, 'IDR') }}</span>
                 </div>
-                <hr class="my-4 border-gray-300 dark:border-gray-700">
-                <div class="flex justify-between font-bold text-gray-800 dark:text-gray-200">
+                <hr class="my-4 border-gray-300 dark:border-gray-600">
+                <div class="flex justify-between font-bold text-gray-900 dark:text-white">
                     <span>Total</span>
                     <span>{{ Number::currency($grand_total, 'IDR') }}</span>
                 </div>
                 @if ($cart_items)
                     <a href="/checkout"
-                        class="mt-6 block bg-blue-500 dark:bg-blue-600 text-center text-white py-2 rounded-md">
+                        class="mt-6 block bg-blue-500 hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800 text-center text-white py-2 rounded-md transition-colors duration-200">
                         Checkout
                     </a>
                 @endif
             </div>
+
         </div>
     </div>
 </div>

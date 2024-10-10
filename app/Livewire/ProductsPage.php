@@ -13,6 +13,7 @@ use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Database\Eloquent\Builder;
 
 #[Title("Product - Fillamers")]
 class ProductsPage extends Component
@@ -44,17 +45,25 @@ class ProductsPage extends Component
     public function render()
     {
         // Query produk yang aktif
+   
+
         $productQuery = Product::query()
         ->where('is_active', 1)
         ->withCount([
             'ratings as average_rating' => function ($query) {
-                $query->select(DB::raw('ROUND(coalesce(avg(rating), 0), 1)')); // Menggunakan ROUND untuk 1 angka desimal
+                $query->select(DB::raw('ROUND(coalesce(avg(rating), 0), 1)'));
             },
-            'orderItems as sold_count'
         ])
-        ->join('product_variants', 'products.id', '=', 'product_variants.product_id') // Join dengan tabel product_variants
-        ->select('products.*', DB::raw('MIN(product_variants.price) as min_price'), DB::raw('MAX(product_variants.price) as max_price')) // Mengambil harga minimum dan maksimum
+        ->leftjoin('product_variants', 'products.id', '=', 'product_variants.product_id') // Join dengan tabel product_variants
+        ->leftJoin('ratings', 'products.id', '=', 'ratings.product_id') // Join dengan tabel ratings
+        ->select(
+            'products.*',
+            DB::raw('(SELECT SUM(order_items.quantity) FROM order_items WHERE order_items.product_id = products.id) as sold_count '),
+            DB::raw('MIN(product_variants.price) as min_price'),
+            DB::raw('ROUND(coalesce(avg(ratings.rating), 0), 1) as average_rating') // Menghitung rata-rata rating
+        )
         ->groupBy('products.id');
+
     
         // Filter berdasarkan kategori
         if(!empty($this->selected_categories)){

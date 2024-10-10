@@ -11,6 +11,7 @@ use App\Livewire\CategoriesPage;
 use App\Livewire\CheckoutPage;
 use App\Livewire\HomePage;
 use App\Livewire\MidtransWebhookPage;
+use App\Livewire\MyAccountPage;
 use App\Livewire\MyOrderDetailPage;
 use App\Livewire\OrdersPage;
 use App\Livewire\ProductDetailPage;
@@ -68,4 +69,7 @@ Route::middleware('auth')->group(function (){
     //Rating
     // Route::get('/rate-product/{id}', [ProductRating::class, 'showRatingForm'])->name('rate.product');
     Route::get('/rate-product/{productId}/{orderId}', ProductRating::class)->name('rate.product');
+
+    //Account
+    Route::get('/my-account', MyAccountPage::class)->name('my-account');
 });

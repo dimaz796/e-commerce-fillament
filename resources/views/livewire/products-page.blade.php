@@ -188,11 +188,14 @@
                                                     </svg>
                                                 @endif
                                             @endfor
-                                            <span
-                                                class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ number_format($product->average_rating, 1) }}/5</span>
+                                            <span class="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                                {{ number_format($product->average_rating, 1) }}/5
+                                            </span>
                                         </div>
+
                                         <span class="text-sm font-medium text-gray-500 dark:text-gray-400">Terjual:
-                                            {{ $product->sold_count }} pcs</span>
+                                            {{ $product->sold_count ?? 0 }} pcs</span>
+
                                     </div>
 
 

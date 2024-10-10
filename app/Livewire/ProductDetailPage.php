@@ -88,6 +88,7 @@ class ProductDetailPage extends Component
         $this->selected_variant_price = $price;
         $this->selected_variant_image = $cleaned_image;
         $this->selected_variant_stock = $stock;
+        $this->quantity = 1;
 
 
     }
@@ -95,6 +96,9 @@ class ProductDetailPage extends Component
     // Fungsi untuk menambahkan produk ke keranjang, termasuk varian dan quantity
     public function addToCart()
 {
+    if(!auth()->check()){
+        return redirect()->route('login');
+    }
     if ($this->selected_variant_id === null) {
         // Jika varian belum dipilih, tampilkan alert
         $this->alert('warning', 'Silakan pilih varian sebelum menambahkan ke keranjang!', [

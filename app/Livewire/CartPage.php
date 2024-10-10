@@ -81,11 +81,6 @@ public function removeItem($product_id, $variant_id = null)
     $this->dispatch('update-cart-count', ['total_count' => $total_count]);
 }
 
-    
-
-    
-
-    
 
 
     public function render()

@@ -171,6 +171,10 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @php
+                            $processedProducts = [];
+                        @endphp
+
                         @foreach ($order_items as $item)
                             <tr wire:key="{{ $item->id }}">
                                 <td class="py-4">
@@ -181,7 +185,9 @@
                                         <span class="font-semibold dark:text-gray-200">{{ $item->product->name }}</span>
                                     </div>
                                 </td>
-                                <td class="py-4 dark:text-gray-200">{{ Number::currency($item->product->price, 'idr') }}
+                                <td class="py-4 dark:text-gray-200">
+                                    <span
+                                        class="text-center w-8 dark:text-gray-200">{{ Number::currency($item->unit_amount, 'idr') }}</span>
                                 </td>
                                 <td class="py-4">
                                     <span class="text-center w-8 dark:text-gray-200">{{ $item->quantity }}</span>
@@ -189,23 +195,37 @@
                                 <td class="py-4 dark:text-gray-200">{{ Number::currency($item->total_amount, 'idr') }}
                                 </td>
 
-                                <!-- Tombol rate akan muncul hanya jika user belum merating produk ini -->
-                                @if ($order->status == 'delivered' && $order->payment_status == 'paid')
-                                    <td class="py-4">
-                                        @if (!Rating::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists())
-                                            <a href="{{ route('rate.product', ['productId' => $item->product_id, 'orderId' => $order->id]) }}"
-                                                class="bg-blue-500 text-white py-1 px-3 rounded">
-                                                Rate this product
-                                            </a>
-                                        @else
-                                            <span class="text-gray-500">Already Rated</span>
-                                        @endif
+                                <!-- Rate button: merged vertically for the same product -->
+                                @if (!in_array($item->product_id, $processedProducts))
+                                    @php
+                                        $variantCount = $order_items->where('product_id', $item->product_id)->count();
+                                    @endphp
+                                    <td class="py-4" rowspan="{{ $variantCount }}">
+                                        <div class="flex justify-center items-center h-full">
+                                            @if ($order->status == 'delivered' && $order->payment_status == 'paid')
+                                                @if (!Rating::where('product_id', $item->product_id)->where('order_id', $order->id)->where('user_id', auth()->id())->exists())
+                                                    <a href="{{ route('rate.product', ['productId' => $item->product_id, 'orderId' => $order->id]) }}"
+                                                        class="bg-blue-500 text-white py-1 px-3 rounded">
+                                                        Rate this product
+                                                    </a>
+                                                @else
+                                                    <span class="text-gray-500">Already Rated</span>
+                                                @endif
+                                            @endif
+                                        </div>
                                     </td>
+                                    @php
+                                        $processedProducts[] = $item->product_id;
+                                    @endphp
                                 @endif
                             </tr>
                         @endforeach
                     </tbody>
+
+
+
                 </table>
+
             </div>
 
 
