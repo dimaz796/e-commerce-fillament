@@ -1,13 +1,6 @@
 <section
     class="bg-gray-100 dark:bg-gray-800 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 min-h-screen">
     <div class="max-w-4xl w-full bg-white dark:bg-gray-900 p-8 rounded-xl shadow-lg">
-        <!-- Notification for success -->
-        @if (session()->has('success'))
-            <div class="bg-green-500 text-white py-2 px-4 rounded-lg text-center">
-                {{ session('success') }}
-            </div>
-        @endif
-
         <h3
             class="block text-2xl font-semibold text-gray-800 sm:text-2xl lg:text-3xl lg:leading-tight mb-10 dark:text-white">
             My Account</h3>

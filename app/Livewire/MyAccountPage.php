@@ -33,7 +33,7 @@ class MyAccountPage extends Component
         $this->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255',
-            'photo' => 'nullable|image|max:1024', // Validasi foto opsional
+            'photo' => 'nullable|image', 
         ]);
     
         // Jika ada foto baru, simpan dan update
@@ -50,7 +50,7 @@ class MyAccountPage extends Component
             'email' => $this->email,
         ]);
     
-        session()->flash('success', 'Account info updated successfully!');
+        return redirect('/')->with('success', 'Account info updated successfully!');
     }
 
     public function render()
